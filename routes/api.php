@@ -16,6 +16,9 @@ use Illuminate\Http\Request;
 Route::group(['middleware' => 'auth:api'], function () {
     Route::post('logout', 'Auth\LoginController@logout');
 
+    Route::get('subscribers', 'SubscriberController@index');
+    Route::delete('subscribers', 'SubscriberController@destroy');
+
     Route::get('/user', function (Request $request) {
         return $request->user();
     });

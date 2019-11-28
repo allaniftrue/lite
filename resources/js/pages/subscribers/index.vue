@@ -17,11 +17,23 @@
       <el-table-column
         prop="status"
         label="Status"
-      />
-      <el-table-column
-        label="Operations"
       >
         <template slot-scope="scope">
+          <el-tag
+            :type="setTagType(scope.row.status)"
+            size="small"
+            effect="dark"
+            disable-transitions
+          >{{scope.row.status}}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="Operations">
+        <template slot-scope="scope">
+          <el-button
+            type="primary"
+            size="mini"
+            @click="handleFields(scope.$index, scope.row)"
+          >Fields</el-button>
           <el-button
             size="mini"
             @click="handleEdit(scope.$index, scope.row)"
@@ -45,52 +57,100 @@
         </template>
       </el-table-column>
     </el-table>
+    <div class="mt-4 mb-4 ml-0">
+      <el-pagination
+        background
+        layout="prev, pager, next"
+        :total="total"
+        @current-change="fetchSubscribers"
+      >
+      </el-pagination>
+    </div>
   </card>
 </template>
 
 <script>
-import axios from 'axios'
+import axios from "axios";
 
 export default {
-  metaInfo () {
-    return { title: this.$t('Subscribers') }
+  metaInfo() {
+    return { title: this.$t("Subscribers") };
   },
 
   data: () => ({
-    subscribers: []
+    subscribers: [],
+    total: 0,
+    mode: null
   }),
 
-  created () {
-    this.fetchSubscribers()
+  created() {
+    this.fetchSubscribers();
   },
 
   methods: {
-    async fetchSubscribers () {
+    async fetchSubscribers(page) {
       try {
-        const { data } = await axios.get('/api/subscribers')
-        this.subscribers = data.data
+        const payload = {
+          page
+        };
+        const { data } = await axios.get("/api/subscribers", {
+          params: payload
+        });
+        this.subscribers = data.data;
+        this.total = data.total;
       } catch (error) {
-        log.error({ error })
+        log.error({ error });
       }
     },
 
-    async handleDelete (index, row) {
+    async handleDelete(index, row) {
       try {
-        const { data } = await axios.delete('/api/subscribers', {
+        const { data } = await axios.delete("/api/subscribers", {
           params: {
             id: row.id
           }
-        })
+        });
         this.$notify.success({
-          title: 'Success',
+          title: "Success",
           message: data.data,
           offset: 100
-        })
-        this.fetchSubscribers()
+        });
+        this.fetchSubscribers();
       } catch (error) {
-        log.error({ error })
+        log.error({ error });
       }
-    }
+    },
+
+    isEdit() {
+      this.mode = "EDIT";
+    },
+
+    setTagType(status) {
+      switch (status) {
+        case "ACTIVE":
+          return "success";
+          break;
+        case "UNSUBSCRIBED":
+          return "danger";
+          break;
+        case "JUNK":
+          return "warning";
+          break;
+        case "BOUNCED":
+          return "info";
+          break;
+        case "UNCONFIRMED":
+          return "";
+          break;
+        default:
+          return "";
+          break;
+      }
+    },
+
+    handleEdit(index, row) {},
+
+    handleFields(index, row) {}
   }
-}
+};
 </script>

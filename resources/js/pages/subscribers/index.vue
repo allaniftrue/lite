@@ -7,6 +7,11 @@
       style="width: 100%"
     >
       <el-table-column
+        prop="id"
+        label="ID"
+        width="50"
+      />
+      <el-table-column
         prop="name"
         label="Name"
       />
@@ -24,7 +29,7 @@
             size="small"
             effect="dark"
             disable-transitions
-          >{{scope.row.status}}</el-tag>
+          >{{ scope.row.status }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="Operations">
@@ -32,14 +37,15 @@
           <el-button
             type="primary"
             size="mini"
-            @click="handleFields(scope.$index, scope.row)"
-          >Fields</el-button>
+            @click="handleForms(scope.$index, scope.row)"
+          >Forms</el-button>
           <el-button
             size="mini"
             @click="handleEdit(scope.$index, scope.row)"
           >
             Edit
           </el-button>
+
           <el-popconfirm
             confirm-button-text="OK"
             cancel-button-text="No"
@@ -57,49 +63,137 @@
         </template>
       </el-table-column>
     </el-table>
+
     <div class="mt-4 mb-4 ml-0">
       <el-pagination
         background
         layout="prev, pager, next"
         :total="total"
+        :current-page.sync="currentPage"
         @current-change="fetchSubscribers"
       >
       </el-pagination>
     </div>
+
+    <el-dialog
+      title="Subscriber Details"
+      :visible.sync="editDialog"
+    >
+      <el-form
+        :model="form"
+        label-position="right"
+        label-width="80px"
+      >
+        <el-form-item label="Name">
+          <el-input
+            v-model="form.name"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="Email">
+          <el-input
+            type="email"
+            v-model="form.email"
+            autocomplete="off"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="Status">
+          <el-select
+            v-model="form.status"
+            placeholder="Select"
+          >
+            <el-option
+              v-for="status in statuses"
+              :key="status.value"
+              :label="status.label"
+              :value="status.value"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <span
+        slot="footer"
+        class="dialog-footer"
+      >
+        <el-button @click="editDialog = false">Cancel</el-button>
+        <el-button
+          type="primary"
+          @click="handleUpdate"
+        >Update</el-button>
+      </span>
+    </el-dialog>
   </card>
 </template>
 
 <script>
 import axios from "axios";
+import { SUBSCRIBER_STATUSES } from "~/constants";
 
 export default {
+  middleware: "auth",
   metaInfo() {
     return { title: this.$t("Subscribers") };
   },
 
   data: () => ({
     subscribers: [],
+    activeSubscriber: null,
     total: 0,
-    mode: null
+    page: 1,
+    loading: false,
+    editDialog: false,
+    form: {
+      id: null,
+      name: null,
+      email: null,
+      status: null
+    }
   }),
 
   created() {
     this.fetchSubscribers();
   },
 
+  computed: {
+    currentPage: {
+      get() {
+        return parseInt(this.page);
+      },
+      set(value) {
+        this.page = parseInt(value);
+      }
+    },
+    statuses() {
+      return SUBSCRIBER_STATUSES.map(status => {
+        return {
+          value: status,
+          label: status.toLowerCase().replace(/^./, status[0].toUpperCase())
+        };
+      });
+    }
+  },
+
   methods: {
     async fetchSubscribers(page) {
       try {
+        this.loading = true;
+        this.page = page || this.$route.query.page;
+
         const payload = {
-          page
+          page: this.page
         };
-        const { data } = await axios.get("/api/subscribers", {
+
+        const { data: subscribers } = await axios.get("/api/subscribers", {
           params: payload
         });
-        this.subscribers = data.data;
-        this.total = data.total;
+
+        this.subscribers = subscribers.data;
+        this.total = subscribers.total;
       } catch (error) {
-        log.error({ error });
+        log.error(eror);
+      } finally {
+        this.loading = false;
       }
     },
 
@@ -110,19 +204,15 @@ export default {
             id: row.id
           }
         });
-        this.$notify.success({
-          title: "Success",
-          message: data.data,
-          offset: 100
+        this.$message({
+          message: "Subscriber successfully removed",
+          type: "success"
         });
         this.fetchSubscribers();
       } catch (error) {
-        log.error({ error });
+        log.error(error);
+        this.$message.error("Oh snap! Failed to process request");
       }
-    },
-
-    isEdit() {
-      this.mode = "EDIT";
     },
 
     setTagType(status) {
@@ -148,9 +238,45 @@ export default {
       }
     },
 
-    handleEdit(index, row) {},
+    handleEdit(index, row) {
+      this.activeSubscriber = row;
+      this.editDialog = true;
 
-    handleFields(index, row) {}
+      Object.keys(this.form).forEach(key => {
+        this.form[key] = this.activeSubscriber[key];
+      });
+    },
+
+    handleForms(index, row) {
+      this.$router.push({
+        name: "subscriber.fields",
+        params: {
+          id: row.id
+        },
+        query: {
+          page: this.page
+        }
+      });
+    },
+
+    handleClose() {
+      this.activeSubscriber = null;
+    },
+
+    async handleUpdate() {
+      // this.editDialog = false;
+      try {
+        axios.patch("api/subscriber", this.form);
+        this.$message({
+          message: "Subscriber successfully updated",
+          type: "success"
+        });
+        this.fetchSubscribers();
+      } catch (error) {
+        log.error(error);
+        this.$message.error("Oh snap! Failed to process request");
+      }
+    }
   }
 };
 </script>

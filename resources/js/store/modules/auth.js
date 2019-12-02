@@ -1,6 +1,6 @@
-import axios from 'axios'
-import Cookies from 'js-cookie'
-import * as types from '../mutation-types'
+import axios from 'axios';
+import Cookies from 'js-cookie';
+import * as types from '../mutation-types';
 
 // state
 export const state = {
@@ -66,7 +66,7 @@ export const actions = {
   async logout ({ commit }) {
     try {
       await axios.post('/api/logout')
-    } catch (e) { }
+    } catch (e) {}
 
     commit(types.LOGOUT)
   },

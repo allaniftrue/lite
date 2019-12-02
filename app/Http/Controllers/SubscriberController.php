@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Subscriber;
 use Illuminate\Http\Request;
+use App\Http\Requests\SubscriberRequest;
 
 class SubscriberController extends Controller
 {
@@ -18,53 +19,33 @@ class SubscriberController extends Controller
 
         if ($request->filled('raw')) {
             return response()->json([
-                'data' => Subscriber::get(),
+                'data' => Subscriber::with('fields')->get(),
             ]);
         }
 
-        return Subscriber::paginate($limit);
+        return Subscriber::with('fields')->paginate($limit);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function show(Request $request)
     {
+        return response()->json([
+            'data' => Subscriber::where('id', $request->id)->with('fields')->first()
+        ]);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store the specified resource in storage.
      *
      * @param \Illuminate\Http\Request $request
+     * @param \App\Subscriber          $subscriber
      *
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(SubscriberRequest $request, Subscriber $subscriber)
     {
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param \App\Subscriber $subscriber
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function show(Subscriber $subscriber)
-    {
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param \App\Subscriber $subscriber
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function edit(Subscriber $subscriber)
-    {
+        return response()->json([
+            'data' => $subscriber->create($request->all())
+        ]);
     }
 
     /**
@@ -75,8 +56,12 @@ class SubscriberController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Subscriber $subscriber)
+    public function update(SubscriberRequest $request, Subscriber $subscriber)
     {
+        return response()->json([
+            'data' => $subscriber->find($request->id)
+                        ->update($request->except(['id']))
+        ]);
     }
 
     /**

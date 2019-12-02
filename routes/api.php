@@ -16,8 +16,17 @@ use Illuminate\Http\Request;
 Route::group(['middleware' => 'auth:api'], function () {
     Route::post('logout', 'Auth\LoginController@logout');
 
+
+
     Route::get('subscribers', 'SubscriberController@index');
     Route::delete('subscribers', 'SubscriberController@destroy');
+    Route::get('subscriber/{id}', 'SubscriberController@show');
+    Route::patch('subscriber', 'SubscriberController@update');
+    Route::post('subscriber', 'SubscriberController@store');
+
+    Route::get('fields', 'FieldController@index');
+
+    Route::post('subscriber/fields/store', 'SubscriberFieldController@store');
 
     Route::get('/user', function (Request $request) {
         return $request->user();

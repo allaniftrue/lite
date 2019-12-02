@@ -3,18 +3,36 @@ import {
   Table,
   TableColumn,
   Button,
-  Notification,
+  Message,
   Pagination,
   Popconfirm,
-  Icon,
-  Tag
+  Dialog,
+  Tag,
+  Form,
+  FormItem,
+  Loading,
+  Input,
+  Select,
+  Option
 } from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 
-[Table, TableColumn, Button, Pagination, Popconfirm, Icon, Tag].forEach(
-  Component => {
-    Vue.component(Component.name, Component)
-  }
-)
+[
+  Table,
+  TableColumn,
+  Button,
+  Pagination,
+  Popconfirm,
+  Dialog,
+  Tag,
+  Form,
+  FormItem,
+  Input,
+  Select,
+  Option
+].forEach(Component => {
+  Vue.component(Component.name, Component)
+})
 
-Vue.prototype.$notify = Notification
+Vue.use(Loading.directive)
+Vue.prototype.$message = Message

@@ -101,6 +101,7 @@
           :rules="[
             { required: true, message: 'Name is required'}
           ]"
+          :error="errors.name"
         >
           <el-input
             v-model="form.name"
@@ -113,6 +114,7 @@
             { required: true, message: 'Email is required'},
             { type: 'email', message: 'Please enter a valid email'}
           ]"
+          :error="errors.email"
         >
           <el-input
             v-model="form.email"
@@ -171,7 +173,11 @@ export default {
       email: null,
       status: 'UNCONFIRMED'
     },
-    mode: 'ADD'
+    mode: 'ADD',
+    errors: {
+      name: null,
+      email: null
+    }
   }),
 
   computed: {
@@ -310,8 +316,17 @@ export default {
         this.formDialog = false
         this.fetchSubscribers()
       } catch (error) {
-        log.error(error)
+        log.info(error)
         this.$message.error('Oh snap! Failed to process request')
+        const { response } = error
+        if (response.status === 422) {
+          const { key, message } = this.getFirstErrorFromLaravel(response.data.errors)
+          console.log({
+            key,
+            error
+          })
+          this.errors[key] = message
+        }
       }
     },
 
@@ -327,6 +342,14 @@ export default {
       } catch (error) {
         log.error(error)
         this.$message.error('Oh snap! Failed to process request')
+      }
+    },
+
+    getFirstErrorFromLaravel (errors) {
+      const key = Object.keys(errors)[0]
+      return {
+        key,
+        message: errors[key][0]
       }
     }
   }

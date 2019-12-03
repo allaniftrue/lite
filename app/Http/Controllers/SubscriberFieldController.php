@@ -22,7 +22,10 @@ class SubscriberFieldController extends Controller
     public function delete(Request $request)
     {
         return response()->json([
-            'data' => Subscriber::find($request->subscriber)->fields()->detach([$request->id]),
+            'data' => Subscriber::find($request->subscriber)
+                ->fields()
+                ->wherePivot('id', $request->id)
+                ->detach()
         ]);
     }
 }

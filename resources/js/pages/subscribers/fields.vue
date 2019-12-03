@@ -39,7 +39,10 @@
                 title="Are you sure to delete this?"
                 @onConfirm="handleDetach(field)"
               >
-                <span slot="reference" class="float-right detatch"><i class="el-icon-circle-close" /></span>
+                <span
+                  slot="reference"
+                  class="float-right detatch"
+                ><i class="el-icon-circle-close" /></span>
               </el-popconfirm>
               {{ field.title }}
             </div>
@@ -57,11 +60,11 @@
 </template>
 
 <script>
-import axios from 'axios'
-import draggable from 'vuedraggable'
+import axios from "axios";
+import draggable from "vuedraggable";
 
 export default {
-  name: 'SubscriberField',
+  name: "SubscriberField",
   components: {
     draggable
   },
@@ -72,106 +75,107 @@ export default {
     loading: false
   }),
 
-  created () {
-    this.fetchFields()
-    this.fetchSubscriber()
+  created() {
+    this.fetchFields();
+    this.fetchSubscriber();
   },
 
   methods: {
-    async fetchFields () {
+    async fetchFields() {
       try {
-        this.loading = true
-        const { data: fields } = await axios.get('/api/fields', {
+        this.loading = true;
+        const { data: fields } = await axios.get("/api/fields", {
           params: { raw: true }
-        })
-        this.fields = fields.data
+        });
+        this.fields = fields.data;
       } catch (error) {
-        log.error(error)
-        this.$message.error('Oh snap! Failed to process request')
+        log.error(error);
+        this.$message.error("Oh snap! Failed to process request");
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
-    async fetchSubscriber () {
+    async fetchSubscriber() {
       try {
-        this.loading = true
+        this.loading = true;
         const { data: subscriber } = await axios.get(
           `/api/subscriber/${this.$route.params.id}`
-        )
+        );
 
-        this.subscriber = subscriber.data
+        this.subscriber = subscriber.data;
       } catch (error) {
-        log.error(error)
-        this.$message.error('Oh snap! Failed to process request')
+        log.error(error);
+        this.$message.error("Oh snap! Failed to process request");
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
 
-    cloneField (item) {
-      log.info({ item })
-      return item
+    cloneField(item) {
+      log.info({ item });
+      return item;
     },
 
-    async handleDrop (evt) {
+    async handleDrop(evt) {
       try {
-        const { data } = await axios.post('/api/subscriber/fields', {
+        const { data } = await axios.post("/api/subscriber/fields", {
           subscriber: this.subscriber.id,
           field: evt.added.element.id
-        })
+        });
         this.$message({
-          message: 'Field successfully added',
-          type: 'success'
-        })
-        this.fetchSubscriber()
+          message: "Field successfully added",
+          type: "success"
+        });
+        this.fetchSubscriber();
       } catch (error) {
-        log.error(error)
-        this.$message.error('Oh snap! Failed to process request')
+        log.error(error);
+        this.$message.error("Oh snap! Failed to process request");
       }
     },
 
-    async handleDetach (row) {
+    async handleDetach(row) {
       try {
-        await axios.delete('/api/subscriber/fields', {
+        log.info({ row });
+        await axios.delete("/api/subscriber/fields", {
           params: {
-            id: row.id,
+            id: row.pivot.id,
             subscriber: this.subscriber.id
           }
-        })
+        });
 
         this.$message({
-          message: 'Field successfully removed',
-          type: 'success'
-        })
+          message: "Field successfully removed",
+          type: "success"
+        });
 
-        this.fetchSubscriber()
+        this.fetchSubscriber();
       } catch (error) {
-        log.info(error)
-        this.$message.error('Oh snap! Failed to process request')
+        log.info(error);
+        this.$message.error("Oh snap! Failed to process request");
       }
     }
   }
-}
+};
 </script>
 
 <style lang="scss" scoped>
-  .dropzone {
+.dropzone {
+  border-radius: 2px;
+  border: 1px solid #f2f6fc;
+}
+
+.fields {
+  min-height: 60px;
+  &__field {
     border-radius: 2px;
-    border: 1px solid #f2f6fc;
-  }
+    background-color: #f4f4f5;
+    cursor: -webkit-grab;
+    cursor: grab;
 
-  .fields {
-    min-height: 60px;
-    &__field {
-      border-radius: 2px;
-      background-color: #f4f4f5;
-      cursor: -webkit-grab;
-      cursor: grab;
-
-      .detatch {
-        cursor: auto;
-      }
+    .detatch {
+      cursor: auto;
     }
   }
+}
 </style>

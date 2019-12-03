@@ -12,6 +12,7 @@ class CreateFieldSubscriberTable extends Migration
     public function up()
     {
         Schema::create('field_subscriber', function (Blueprint $table) {
+            $table->bigIncrements('id');
             $table->unsignedBigInteger('subscriber_id');
             $table->unsignedBigInteger('field_id');
             $table->string('value')->nullable();

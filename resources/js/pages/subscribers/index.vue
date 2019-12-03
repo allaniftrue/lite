@@ -1,6 +1,15 @@
 <template>
   <card :title="$t('Subscribers')">
+    <el-button
+      class="mb-4"
+      type="info"
+      size="mini"
+      @click="addUser"
+    >
+      ADD SUBSCRIBER
+    </el-button>
     <el-table
+      v-loading="loading"
       :data="subscribers"
       border
       stripe
@@ -80,20 +89,31 @@
 
     <el-dialog
       title="Subscriber Details"
-      :visible.sync="editDialog"
+      :visible.sync="formDialog"
     >
       <el-form
         :model="form"
         label-position="right"
         label-width="80px"
       >
-        <el-form-item label="Name">
+        <el-form-item
+          label="Name"
+          :rules="[
+            { required: true, message: 'Name is required'}
+          ]"
+        >
           <el-input
             v-model="form.name"
             autocomplete="off"
           />
         </el-form-item>
-        <el-form-item label="Email">
+        <el-form-item
+          label="Email"
+          :rules="[
+            { required: true, message: 'Email is required'},
+            { type: 'email', message: 'Please enter a valid email'}
+          ]"
+        >
           <el-input
             v-model="form.email"
             type="email"
@@ -118,10 +138,10 @@
         slot="footer"
         class="dialog-footer"
       >
-        <el-button @click="editDialog = false">Cancel</el-button>
+        <el-button @click="formDialog = false">Cancel</el-button>
         <el-button
           type="primary"
-          @click="handleUpdate"
+          @click="handleSubmit"
         >Update</el-button>
       </span>
     </el-dialog>
@@ -144,13 +164,14 @@ export default {
     total: 0,
     page: 1,
     loading: false,
-    editDialog: false,
+    formDialog: false,
     form: {
       id: null,
       name: null,
       email: null,
-      status: null
-    }
+      status: 'UNCONFIRMED'
+    },
+    mode: 'ADD'
   }),
 
   computed: {
@@ -235,8 +256,9 @@ export default {
     },
 
     handleEdit (index, row) {
+      this.mode = 'EDIT'
       this.activeSubscriber = row
-      this.editDialog = true
+      this.formDialog = true
 
       Object.keys(this.form).forEach(key => {
         this.form[key] = this.activeSubscriber[key]
@@ -259,6 +281,40 @@ export default {
       this.activeSubscriber = null
     },
 
+    addUser () {
+      this.mode = 'ADD'
+      this.formDialog = true
+      this.form = {
+        id: null,
+        name: null,
+        email: null,
+        status: 'UNCONFIRMED'
+      }
+    },
+
+    handleSubmit () {
+      if (this.mode === 'ADD') {
+        this.handleCreate()
+      } else {
+        this.handleUpdate()
+      }
+    },
+
+    async handleCreate () {
+      try {
+        await axios.post('api/subscriber', this.form)
+        this.$message({
+          message: 'Subscriber successfully added',
+          type: 'success'
+        })
+        this.formDialog = false
+        this.fetchSubscribers()
+      } catch (error) {
+        log.error(error)
+        this.$message.error('Oh snap! Failed to process request')
+      }
+    },
+
     async handleUpdate () {
       try {
         await axios.patch('api/subscriber', this.form)
@@ -266,12 +322,11 @@ export default {
           message: 'Subscriber successfully updated',
           type: 'success'
         })
+        this.formDialog = false
+        this.fetchSubscribers()
       } catch (error) {
         log.error(error)
         this.$message.error('Oh snap! Failed to process request')
-      } finally {
-        this.editDialog = false
-        this.fetchSubscribers()
       }
     }
   }

@@ -25,10 +25,10 @@ class SubscriberRequest extends FormRequest
     public function rules()
     {
         return [
-            'id' => 'required|numeric',
+            'id' => 'nullable|numeric',
             'name' => 'required|max:120',
-            'email' => 'required|email',
-            'status' => 'in:' . implode(',', SubscriberStatus::getValues())
+            'email' => 'required|email:rfc,dns',
+            'status' => 'in:'.implode(',', SubscriberStatus::getValues()),
         ];
     }
 }

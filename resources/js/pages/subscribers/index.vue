@@ -29,7 +29,9 @@
             size="small"
             effect="dark"
             disable-transitions
-          >{{ scope.row.status }}</el-tag>
+          >
+            {{ scope.row.status }}
+          </el-tag>
         </template>
       </el-table-column>
       <el-table-column label="Operations">
@@ -38,7 +40,9 @@
             type="primary"
             size="mini"
             @click="handleForms(scope.$index, scope.row)"
-          >Forms</el-button>
+          >
+            Forms
+          </el-button>
           <el-button
             size="mini"
             @click="handleEdit(scope.$index, scope.row)"
@@ -71,8 +75,7 @@
         :total="total"
         :current-page.sync="currentPage"
         @current-change="fetchSubscribers"
-      >
-      </el-pagination>
+      />
     </div>
 
     <el-dialog
@@ -88,14 +91,14 @@
           <el-input
             v-model="form.name"
             autocomplete="off"
-          ></el-input>
+          />
         </el-form-item>
         <el-form-item label="Email">
           <el-input
-            type="email"
             v-model="form.email"
+            type="email"
             autocomplete="off"
-          ></el-input>
+          />
         </el-form-item>
         <el-form-item label="Status">
           <el-select
@@ -107,8 +110,7 @@
               :key="status.value"
               :label="status.label"
               :value="status.value"
-            >
-            </el-option>
+            />
           </el-select>
         </el-form-item>
       </el-form>
@@ -127,13 +129,13 @@
 </template>
 
 <script>
-import axios from "axios";
-import { SUBSCRIBER_STATUSES } from "~/constants";
+import axios from 'axios'
+import { SUBSCRIBER_STATUSES } from '~/constants'
 
 export default {
-  middleware: "auth",
-  metaInfo() {
-    return { title: this.$t("Subscribers") };
+  middleware: 'auth',
+  metaInfo () {
+    return { title: this.$t('Subscribers') }
   },
 
   data: () => ({
@@ -151,132 +153,127 @@ export default {
     }
   }),
 
-  created() {
-    this.fetchSubscribers();
-  },
-
   computed: {
     currentPage: {
-      get() {
-        return parseInt(this.page);
+      get () {
+        return parseInt(this.page)
       },
-      set(value) {
-        this.page = parseInt(value);
+      set (value) {
+        this.page = parseInt(value)
       }
     },
-    statuses() {
+    statuses () {
       return SUBSCRIBER_STATUSES.map(status => {
         return {
           value: status,
           label: status.toLowerCase().replace(/^./, status[0].toUpperCase())
-        };
-      });
+        }
+      })
     }
   },
 
+  created () {
+    this.fetchSubscribers()
+  },
+
   methods: {
-    async fetchSubscribers(page) {
+    async fetchSubscribers (page) {
       try {
-        this.loading = true;
-        this.page = page || this.$route.query.page;
+        this.loading = true
+        this.page = page || this.$route.query.page
 
         const payload = {
           page: this.page
-        };
+        }
 
-        const { data: subscribers } = await axios.get("/api/subscribers", {
+        const { data: subscribers } = await axios.get('/api/subscribers', {
           params: payload
-        });
+        })
 
-        this.subscribers = subscribers.data;
-        this.total = subscribers.total;
+        this.subscribers = subscribers.data
+        this.total = subscribers.total
       } catch (error) {
-        log.error(eror);
+        log.error(eror)
       } finally {
-        this.loading = false;
+        this.loading = false
       }
     },
 
-    async handleDelete(index, row) {
+    async handleDelete (index, row) {
       try {
-        const { data } = await axios.delete("/api/subscribers", {
+        const { data } = await axios.delete('/api/subscribers', {
           params: {
             id: row.id
           }
-        });
+        })
         this.$message({
-          message: "Subscriber successfully removed",
-          type: "success"
-        });
-        this.fetchSubscribers();
+          message: 'Subscriber successfully removed',
+          type: 'success'
+        })
+        this.fetchSubscribers()
       } catch (error) {
-        log.error(error);
-        this.$message.error("Oh snap! Failed to process request");
+        log.error(error)
+        this.$message.error('Oh snap! Failed to process request')
       }
     },
 
-    setTagType(status) {
+    setTagType (status) {
       switch (status) {
-        case "ACTIVE":
-          return "success";
-          break;
-        case "UNSUBSCRIBED":
-          return "danger";
-          break;
-        case "JUNK":
-          return "warning";
-          break;
-        case "BOUNCED":
-          return "info";
-          break;
-        case "UNCONFIRMED":
-          return "";
-          break;
+        case 'ACTIVE':
+          return 'success'
+        case 'UNSUBSCRIBED':
+          return 'danger'
+        case 'JUNK':
+          return 'warning'
+        case 'BOUNCED':
+          return 'info'
+        case 'UNCONFIRMED':
+          return ''
         default:
-          return "";
-          break;
+          return ''
       }
     },
 
-    handleEdit(index, row) {
-      this.activeSubscriber = row;
-      this.editDialog = true;
+    handleEdit (index, row) {
+      this.activeSubscriber = row
+      this.editDialog = true
 
       Object.keys(this.form).forEach(key => {
-        this.form[key] = this.activeSubscriber[key];
-      });
+        this.form[key] = this.activeSubscriber[key]
+      })
     },
 
-    handleForms(index, row) {
+    handleForms (index, row) {
       this.$router.push({
-        name: "subscriber.fields",
+        name: 'subscriber.fields',
         params: {
           id: row.id
         },
         query: {
           page: this.page
         }
-      });
+      })
     },
 
-    handleClose() {
-      this.activeSubscriber = null;
+    handleClose () {
+      this.activeSubscriber = null
     },
 
-    async handleUpdate() {
-      // this.editDialog = false;
+    async handleUpdate () {
       try {
-        axios.patch("api/subscriber", this.form);
+        await axios.patch('api/subscriber', this.form)
         this.$message({
-          message: "Subscriber successfully updated",
-          type: "success"
-        });
-        this.fetchSubscribers();
+          message: 'Subscriber successfully updated',
+          type: 'success'
+        })
       } catch (error) {
-        log.error(error);
-        this.$message.error("Oh snap! Failed to process request");
+        log.error(error)
+        this.$message.error('Oh snap! Failed to process request')
+      } finally {
+        this.editDialog = false
+        this.fetchSubscribers()
       }
     }
   }
-};
+}
 </script>

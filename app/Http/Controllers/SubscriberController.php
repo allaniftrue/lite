@@ -16,7 +16,6 @@ class SubscriberController extends Controller
     public function index(Request $request)
     {
         $limit = $request->limit ?? 10;
-
         if ($request->filled('raw')) {
             return response()->json([
                 'data' => Subscriber::with('fields')->get(),
@@ -29,7 +28,7 @@ class SubscriberController extends Controller
     public function show(Request $request)
     {
         return response()->json([
-            'data' => Subscriber::where('id', $request->id)->with('fields')->first()
+            'data' => Subscriber::where('id', $request->id)->with('fields')->first(),
         ]);
     }
 
@@ -44,7 +43,7 @@ class SubscriberController extends Controller
     public function store(SubscriberRequest $request, Subscriber $subscriber)
     {
         return response()->json([
-            'data' => $subscriber->create($request->all())
+            'data' => $subscriber->create($request->all()),
         ]);
     }
 
@@ -60,7 +59,7 @@ class SubscriberController extends Controller
     {
         return response()->json([
             'data' => $subscriber->find($request->id)
-                        ->update($request->except(['id']))
+                        ->update($request->except(['id'])),
         ]);
     }
 

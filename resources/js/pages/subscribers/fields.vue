@@ -33,11 +33,19 @@
               :key="field.uuid"
               class="p-2 my-1 fields__field"
             >
+              <el-popconfirm
+                confirm-button-text="OK"
+                cancel-button-text="No"
+                title="Are you sure to delete this?"
+                @onConfirm="handleDetach(field)"
+              >
+                <span slot="reference" class="float-right detatch"><i class="el-icon-circle-close" /></span>
+              </el-popconfirm>
               {{ field.title }}
             </div>
           </div>
           <div
-            v-if="subscriber.fields.length <= 0"
+            v-else
             class="text-center p-4"
           >
             Drop Fields Here
@@ -108,7 +116,7 @@ export default {
 
     async handleDrop (evt) {
       try {
-        const { data } = await axios.post('/api/subscriber/fields/store', {
+        const { data } = await axios.post('/api/subscriber/fields', {
           subscriber: this.subscriber.id,
           field: evt.added.element.id
         })
@@ -119,6 +127,27 @@ export default {
         this.fetchSubscriber()
       } catch (error) {
         log.error(error)
+        this.$message.error('Oh snap! Failed to process request')
+      }
+    },
+
+    async handleDetach (row) {
+      try {
+        await axios.delete('/api/subscriber/fields', {
+          params: {
+            id: row.id,
+            subscriber: this.subscriber.id
+          }
+        })
+
+        this.$message({
+          message: 'Field successfully removed',
+          type: 'success'
+        })
+
+        this.fetchSubscriber()
+      } catch (error) {
+        log.info(error)
         this.$message.error('Oh snap! Failed to process request')
       }
     }
@@ -139,6 +168,10 @@ export default {
       background-color: #f4f4f5;
       cursor: -webkit-grab;
       cursor: grab;
+
+      .detatch {
+        cursor: auto;
+      }
     }
   }
 </style>

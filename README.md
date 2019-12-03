@@ -1,8 +1,9 @@
 ## Installation
-- run `composer install && npm install`
+- run `composer install && npm install && npm run production`
 - run `cp .env.example .env` and edit config details
 - run `php artisan key:generate` and `php artisan jwt:secret`
-- run `php artisan migrate`
+- run `php artisan migrate --seed`
+- run `php artisan serve --port=8080` or host it on your own dev server
 
 ## Usage
 

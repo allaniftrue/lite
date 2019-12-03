@@ -14,6 +14,7 @@ $config = [
 
   <title>{{ config('app.name') }}</title>
 
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
   <link rel="stylesheet" href="{{ mix('dist/css/app.css') }}">
 </head>
 <body>

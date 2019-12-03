@@ -1,4 +1,4 @@
-import Vue from 'vue';
+import Vue from 'vue'
 import {
   Table,
   TableColumn,
@@ -15,7 +15,6 @@ import {
   Select,
   Option
 } from 'element-ui';
-import 'element-ui/lib/theme-chalk/index.css';
 
 [
   Table,

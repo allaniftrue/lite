@@ -7,7 +7,7 @@ use App\User;
 use App\Subscriber;
 use App\Field;
 
-class AddProjectFieldTest extends TestCase
+class AddSubscriberFieldTest extends TestCase
 {
     public function setUp(): void
     {

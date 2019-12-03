@@ -219,8 +219,13 @@ export default {
 
         this.subscribers = subscribers.data
         this.total = subscribers.total
+        this.$router.push({
+          query: {
+            page: this.page
+          }
+        })
       } catch (error) {
-        log.error(eror)
+        log.error(error)
       } finally {
         this.loading = false
       }
